@@ -23,3 +23,16 @@
 
 
 ---
+
+### Comment by @Kaijon at 2026-04-06 14:11:41.000 UTC
+
+<!-- telegram-meta: {"chat_id":8799166656,"msg_id":43,"user_id":8799166656,"username":null,"chat_type":"private","ts":"2026-04-06T14:11:37.000Z"} -->
+
+**來自：** KC Hou · private
+
+---
+
+整理CRA, CE認證, EN18031, ETSI EN303 645 懶人包
+
+
+---
