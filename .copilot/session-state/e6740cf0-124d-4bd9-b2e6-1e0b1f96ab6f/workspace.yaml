@@ -1,0 +1,12 @@
+id: e6740cf0-124d-4bd9-b2e6-1e0b1f96ab6f
+cwd: /home/runner/work/little-hou-claw/little-hou-claw
+git_root: /home/runner/work/little-hou-claw/little-hou-claw
+repository: Kaijon/little-hou-claw
+host_type: github
+branch: issue-1
+summary_count: 0
+created_at: 2026-04-06T08:41:14.789Z
+updated_at: 2026-04-06T08:41:18.567Z
+summary: |-
+  請將最終結果寫入 artifacts/4191189220/result.md 。我的提示詞為: https://www.youtube.com/watch?v=PQU9o_5rHC4
+  使用gemini-summary skills 總結
