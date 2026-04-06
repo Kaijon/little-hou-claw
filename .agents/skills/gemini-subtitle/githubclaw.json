@@ -1,0 +1,11 @@
+{
+  "name": "Gemini Subtitle",
+  "tagline": "一鍵生成繁體中文字幕，支援 YouTube 與影片檔案",
+  "description": "Gemini Subtitle 可自動為 YouTube 影片、遠端影片 URL 或本地影片檔產生繁體中文（zh-TW）字幕，輸出為標準 SRT 或 WebVTT 格式，可直接用於影片播放器或字幕編輯工具。",
+  "category": "content",
+  "tags": ["gemini", "subtitle", "video", "chinese", "srt", "vtt"],
+  "version": "1.0.0",
+  "support_url": "https://github.com/duotify/GitHubClawToolkit/issues",
+  "homepage": "https://learn.duotify.com/courses/githubclaw",
+  "requireEnv": ["GEMINI_API_KEY"]
+}

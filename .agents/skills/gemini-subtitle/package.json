@@ -1,0 +1,16 @@
+{
+  "name": "gemini-subtitle-skill",
+  "version": "1.0.0",
+  "description": "繁體中文字幕生成工具 — 支援 YouTube URL、影片 URL 與本地影片檔，輸出 SRT/VTT 格式字幕",
+  "type": "module",
+  "scripts": {
+    "build": "bun build src/subtitle.js --outfile scripts/subtitle.js --target node --minify",
+    "subtitle": "node scripts/subtitle.js"
+  },
+  "dependencies": {
+    "@google/genai": ">=1.33.0"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  }
+}
