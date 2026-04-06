@@ -23,3 +23,17 @@
 
 
 ---
+
+### Comment by @Kaijon at 2026-04-06 08:40:44.000 UTC
+
+<!-- telegram-meta: {"chat_id":8799166656,"msg_id":14,"user_id":8799166656,"username":null,"chat_type":"private","ts":"2026-04-06T08:40:41.000Z"} -->
+
+**來自：** KC Hou · private
+
+---
+
+https://www.youtube.com/watch?v=PQU9o_5rHC4
+使用gemini-summary skills 總結
+
+
+---
