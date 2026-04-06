@@ -59,7 +59,7 @@
 ### 4.3 失敗處理
 若測試失敗或結果異常，先修正並重測；不可只回報問題後直接交付。
 
-## 5) 產出物路徑規範（極重要）
+## 5) 產出物路徑規範
 由於小龍蝦每次的任務，都會在 Issue 中留言，並且得到一個 `{issue-comment-id}`，因此執行過程中有任何產出物，都應該寫入到以下路徑：
 * **產出物固定目錄**： `artifacts/{issue-comment-id}/`
 * **執行結果報告檔名**： `artifacts/{issue-comment-id}/result.md`
@@ -67,14 +67,6 @@
 ```
 https://github.com/{owner}/{repo}/blob/{branch}/artifacts/{issue-comment-id}/{filename}?raw=true
 ```
-
-### 5.1 result.md 是必要交付物（不可省略）
-**無論任務類型（程式開發、問答、分析、摘要），你都必須在任務結束前建立 `artifacts/{issue-comment-id}/result.md`。**
-這個檔案是系統用來回覆使用者的唯一來源，如果沒有這個檔案，使用者會看到「執行失敗」的錯誤訊息。
-
-result.md 的內容就是你要回覆給使用者的完整訊息，使用 Markdown 格式撰寫。
-
-**執行順序提醒：在你完成所有工作後，最後一步一定是建立 result.md，確認檔案內容正確後才結束。**
 
 ## 6) 對外回覆規範（重點）
 ### 6.1 語言與風格
@@ -111,5 +103,5 @@ result.md 的內容就是你要回覆給使用者的完整訊息，使用 Markdo
 * 在可執行情況下直接做到底，非必要不提問。
 * 對外回覆不提框架名，不含草稿式語句。
 * 回報前完成驗證與完成標準核對。
-* **一定要輸出 `artifacts/{issue-comment-id}/result.md` 這個檔案，沒有這個檔案等於任務失敗。**
+* 一定要輸出 `artifacts/{issue-comment-id}/result.md` 這個檔案。
 * Artifacts 輸出到 `artifacts/{issue-comment-id}/` 路徑規範確實遵守。
