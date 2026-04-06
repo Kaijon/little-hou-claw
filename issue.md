@@ -2099,9 +2099,40 @@ Boris，感謝你今天帶來的分享
 
 ### Comment by @Kaijon at 2026-04-06 12:42:23.000 UTC
 
-「小龍蝦」已經收到新的指示，正在幫忙安排處理中，請稍等一下，事情很快就會有進展。
+# 字幕無法上傳的原因
 
-<!-- githubclaw-brain-result: {"source":"githubclaw-worker-brain","requestTelegramMeta":{"chat_id":8799166656,"msg_id":18,"user_id":8799166656,"chat_type":"private","ts":"2026-04-06T12:42:14.000Z"}} -->
+你目前拿去給 Chrome Substital 的檔案是 `result.md`，但 Substital 上傳字幕時通常需要的是 **`.srt`**（或把 `.srt` 壓成 `.zip`），不會把 `.md` 當成可用字幕檔。
+
+## 可直接使用的檔案
+- `artifacts/4192298094/result.srt`
+
+## 這份字幕檔本身的格式
+- 編碼：UTF-8
+- 格式：SubRip (`.srt`)
+- 時間碼格式：`00:00:00,000 --> 00:00:03,800`
+
+## 建議
+請在 Substital 直接上傳 `result.srt`，不要上傳 `result.md`。如果要分享給別人，也請保留副檔名 `.srt`。
+
+<!-- githubclaw-brain-result: {"source":"githubclaw-worker-brain"} -->
+
+
+---
+
+### Comment by @Kaijon at 2026-04-06 12:47:52.000 UTC
+
+<!-- telegram-meta: {"chat_id":8799166656,"msg_id":20,"user_id":8799166656,"username":null,"chat_type":"private","ts":"2026-04-06T12:47:48.000Z"} -->
+<!-- githubclaw-media-meta: {"stage":"finalized","kind":"single","temp_paths":["assets/telegram/1775479671601_file_0.jpg"],"final_paths":["artifacts/4192322629/file_0.jpg"]} -->
+
+**來自：** KC Hou · private
+
+---
+
+![📷 照片](https://github.com/Kaijon/little-hou-claw/blob/issue-1/artifacts/4192322629/file_0.jpg?raw=true)
+
+還是不能work跟1, 2, 3有關係嗎？
+
+相對位置：`artifacts/4192322629/file_0.jpg`
 
 
 ---
