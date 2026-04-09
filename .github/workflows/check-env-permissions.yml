@@ -872,7 +872,7 @@ jobs:
           fi
           echo "✅ WORKER_NAME 已設定: ${WORKER_NAME}"
 
-      - name: "[TC-WN02] WORKER_NAME — 格式驗證（以 -claw 結尾）"
+      - name: "[TC-WN02] WORKER_NAME — 格式驗證（Cloudflare Worker script name）"
         id: tc_wn02
         continue-on-error: true
         run: |
@@ -880,12 +880,11 @@ jobs:
             echo "::warning::WORKER_NAME 未設定，跳過格式驗證"
             exit 0
           fi
-          if ! [[ "${WORKER_NAME}" =~ -claw$ ]]; then
-            echo "::error::WORKER_NAME 格式不符（預期以 -claw 結尾，實際: '${WORKER_NAME}'）"
+          if ! [[ "${WORKER_NAME}" =~ ^[a-z0-9]([a-z0-9-]{0,61}[a-z0-9])?$ ]]; then
+            echo "::error::WORKER_NAME 格式不符（需符合 Cloudflare Worker script name 規則，實際: '${WORKER_NAME}'）"
             exit 1
           fi
-          WORKER_PREFIX="${WORKER_NAME%-claw}"
-          echo "✅ WORKER_NAME 格式正確（前綴: ${WORKER_PREFIX}，結尾: -claw）"
+          echo "✅ WORKER_NAME 格式正確"
 
       - name: "[TC-WN03] WORKER_NAME — Worker 在 Cloudflare 帳號中存在"
         id: tc_wn03
@@ -1240,7 +1239,7 @@ jobs:
             echo "| 測試案例 | 變數 | 說明 | 結果 |"
             echo "|---------|------|------|:----:|"
             echo "| TC-WN01  | \`WORKER_NAME\`       | 是否存在                        | $(icon "$OUTCOME_WN01") |"
-            echo "| TC-WN02  | \`WORKER_NAME\`       | 格式驗證（以 -claw 結尾）       | $(icon "$OUTCOME_WN02") |"
+            echo "| TC-WN02  | \`WORKER_NAME\`       | 格式驗證（Cloudflare 規則）     | $(icon "$OUTCOME_WN02") |"
             echo "| TC-WN03  | \`WORKER_NAME\`       | Worker 在 Cloudflare 存在       | $(icon "$OUTCOME_WN03") |"
             echo "| TC-SUB01 | \`WORKERS_SUBDOMAIN\` | 是否存在                        | $(icon "$OUTCOME_SUB01") |"
             echo "| TC-SUB02 | \`WORKERS_SUBDOMAIN\` | 格式驗證（alphanumeric+hyphen） | $(icon "$OUTCOME_SUB02") |"
@@ -1256,4 +1255,3 @@ jobs:
           echo ""
           echo "📊 測試完成：通過 ${PASS}，失敗 ${FAIL}，跳過 ${SKIP}"
           echo "   完整結果請查看 Job Summary 或各個 Step 的執行狀態"
-

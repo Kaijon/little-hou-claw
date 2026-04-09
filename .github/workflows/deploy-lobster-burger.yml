@@ -295,30 +295,72 @@ jobs:
           TF_VAR_workers_dev_subdomain: ${{ steps.workers_subdomain.outputs.subdomain }}
         run: terraform init
 
-      - name: Import existing Worker
-        working-directory: Terraform
+      - name: Resolve existing Worker
+        id: worker_reconciliation
         env:
-          TF_VAR_workers_dev_subdomain: ${{ steps.workers_subdomain.outputs.subdomain }}
+          STORED_WORKER_NAME: ${{ vars.WORKER_NAME }}
+          STORED_WORKER_URL: ${{ vars.WORKER_URL }}
+          STORED_GITHUBCLAW_WORKER_URL: ${{ vars.GITHUBCLAW_WORKER_URL }}
         run: |
           set -euo pipefail
 
-          worker_name="${TF_VAR_github_owner,,}-${TF_VAR_github_repo,,}-claw-worker"
+          source "${GITHUB_WORKSPACE}/.github/workflows/lib/worker-name.sh"
+
+          canonical_worker_name="$(build_canonical_worker_name "${TF_VAR_github_owner}" "${TF_VAR_github_repo}")"
+          legacy_worker_name="$(build_legacy_worker_name "${TF_VAR_github_repo}")"
+
+          matched_worker_name=""
+          match_status=0
+          if matched_worker_name="$(
+            resolve_existing_worker_name \
+              "${TF_VAR_cloudflare_api_token}" \
+              "${TF_VAR_cloudflare_account_id}" \
+              "${TF_VAR_github_owner}" \
+              "${TF_VAR_github_repo}" \
+              "${STORED_WORKER_NAME}" \
+              "${STORED_WORKER_URL}" \
+              "${STORED_GITHUBCLAW_WORKER_URL}"
+          )"; then
+            echo "✅ 偵測到既有 Worker：${matched_worker_name}"
+          else
+            match_status=$?
+            if [[ "$match_status" -ne 1 ]]; then
+              exit "$match_status"
+            fi
+            echo "ℹ️ 找不到既有 Worker，將使用 canonical 名稱建立或接續部署。"
+            matched_worker_name=""
+          fi
+
+          echo "canonical_worker_name=${canonical_worker_name}" >> "$GITHUB_OUTPUT"
+          echo "legacy_worker_name=${legacy_worker_name}" >> "$GITHUB_OUTPUT"
+          echo "matched_worker_name=${matched_worker_name}" >> "$GITHUB_OUTPUT"
+          echo "worker_name_override=${matched_worker_name}" >> "$GITHUB_OUTPUT"
+
+      - name: Import existing Worker
+        if: steps.worker_reconciliation.outputs.matched_worker_name != ''
+        working-directory: Terraform
+        env:
+          TF_VAR_workers_dev_subdomain: ${{ steps.workers_subdomain.outputs.subdomain }}
+          TF_VAR_github_claw_worker_name_override: ${{ steps.worker_reconciliation.outputs.worker_name_override }}
+        run: |
+          set -euo pipefail
 
           terraform import \
             cloudflare_worker.github_claw \
-            "${TF_VAR_cloudflare_account_id}/${worker_name}" \
-            || true
+            "${TF_VAR_cloudflare_account_id}/${TF_VAR_github_claw_worker_name_override}"
 
       - name: Terraform plan
         working-directory: Terraform
         env:
           TF_VAR_workers_dev_subdomain: ${{ steps.workers_subdomain.outputs.subdomain }}
+          TF_VAR_github_claw_worker_name_override: ${{ steps.worker_reconciliation.outputs.worker_name_override }}
         run: terraform plan -out=tfplan
 
       - name: Terraform apply
         working-directory: Terraform
         env:
           TF_VAR_workers_dev_subdomain: ${{ steps.workers_subdomain.outputs.subdomain }}
+          TF_VAR_github_claw_worker_name_override: ${{ steps.worker_reconciliation.outputs.worker_name_override }}
         run: terraform apply -auto-approve tfplan
 
       - name: Read Terraform outputs
@@ -326,6 +368,7 @@ jobs:
         working-directory: Terraform
         env:
           TF_VAR_workers_dev_subdomain: ${{ steps.workers_subdomain.outputs.subdomain }}
+          TF_VAR_github_claw_worker_name_override: ${{ steps.worker_reconciliation.outputs.worker_name_override }}
         run: |
           set -euo pipefail
           echo "worker_name=$(terraform output -raw github_claw_worker_script_name)" >> "$GITHUB_OUTPUT"
@@ -357,12 +400,17 @@ jobs:
           workingDirectory: GitHubClawCore
           command: d1 migrations apply SCHEDULES_DB --remote --config wrangler.migrations.toml
 
-      - name: Sync GitHubClaw Worker URL variable
+      - name: Sync GitHubClaw Worker metadata variables
         env:
           GH_TOKEN: ${{ inputs.claw_sys_github_token || secrets.CLAW_SYS_GITHUB_TOKEN }}
+          WORKER_NAME: ${{ steps.tf_outputs.outputs.worker_name }}
           WORKER_URL: ${{ steps.tf_outputs.outputs.worker_url }}
+          WORKERS_SUBDOMAIN: ${{ steps.workers_subdomain.outputs.subdomain }}
         run: |
           set -euo pipefail
+          gh variable set WORKER_NAME --body "${WORKER_NAME}" --repo "${GITHUB_REPOSITORY}"
+          gh variable set WORKERS_SUBDOMAIN --body "${WORKERS_SUBDOMAIN}" --repo "${GITHUB_REPOSITORY}"
+          gh variable set WORKER_URL --body "${WORKER_URL}" --repo "${GITHUB_REPOSITORY}"
           gh variable set GITHUBCLAW_WORKER_URL --body "${WORKER_URL}" --repo "${GITHUB_REPOSITORY}"
 
       - name: Configure Telegram webhook
