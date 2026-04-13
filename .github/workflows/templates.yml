@@ -1,5 +1,5 @@
 name: '📚 同步範本'
-run-name: "範本同步: ${{ inputs.template_name }} | req:${{ inputs.request_id }}"
+run-name: "📚 範本同步: ${{ inputs.template_name }} | req:${{ inputs.request_id }}"
 
 on:
   workflow_dispatch:
@@ -84,7 +84,21 @@ jobs:
           mkdir -p "${INSTALL_PATH}"
           rsync -a --delete "templates-source/templates/${TEMPLATE_NAME}/" "${INSTALL_PATH}/"
 
-          git add -A -- "${INSTALL_PATH}"
+          # 同步範本額外的 workflow 檔案到 .github/workflows/
+          TEMPLATE_WF_DIR="templates-source/templates/${TEMPLATE_NAME}/.github/workflows"
+          if [[ -d "${TEMPLATE_WF_DIR}" ]]; then
+            mkdir -p ".github/workflows"
+            shopt -s nullglob
+            for wf_file in "${TEMPLATE_WF_DIR}"/*.yml "${TEMPLATE_WF_DIR}"/*.yaml; do
+              wf_name="$(basename "${wf_file}")"
+              [[ "${wf_name}" == "issue-N.yml" ]] && continue
+              echo "複製 workflow: ${wf_name}"
+              cp "${wf_file}" ".github/workflows/${wf_name}"
+            done
+            shopt -u nullglob
+          fi
+
+          git add -A -- "${INSTALL_PATH}" ".github/workflows"
           if git diff --cached --quiet; then
             echo "No changes to commit"
             exit 0
