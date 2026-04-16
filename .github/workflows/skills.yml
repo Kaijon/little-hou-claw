@@ -198,15 +198,10 @@ jobs:
             echo "No post-install.sh found, skipping"
           fi
 
-      # ── Step 7: 切換到 main 分支，用 Copilot CLI 修改 workflow YAML ─
+      # ── Step 7: 切換到 main 分支，用 YAML parser 注入 workflow env vars ─
       - name: 切換到 main 分支修改 workflow YAML
         if: env.INSTALL_FAILED != 'true' && env.REQUIRED_ENVS != ''
         shell: bash
-        env:
-          GH_TOKEN: ${{ env.COPILOT_GITHUB_TOKEN }}
-          GITHUB_TOKEN: ${{ env.COPILOT_GITHUB_TOKEN }}
-          COPILOT_GITHUB_TOKEN: ${{ env.COPILOT_GITHUB_TOKEN }}
-          EXPR_DOLLAR: "$"
         run: |
           set -euo pipefail
 
@@ -219,71 +214,15 @@ jobs:
             exit 0
           fi
 
-          # Build GitHub Actions expression syntax at runtime to avoid YAML-level parsing
-          EO="${EXPR_DOLLAR}{{ "
-          EC=" }}"
-
-          IFS=',' read -ra ENV_ARRAY <<< "$REQUIRED_ENVS"
-          PROMPT_FILE=$(mktemp)
-          trap 'rm -f "$PROMPT_FILE"' EXIT
-          {
-            echo "Please modify the file ${WORKFLOW_FILE} to add environment variables for the skill '${SKILL_NAME}'."
-            echo ""
-            echo "Required changes:"
-            for env_var in "${ENV_ARRAY[@]}"; do
-              env_var=$(echo "$env_var" | xargs)
-              [[ -z "$env_var" ]] && continue
-              echo "- Add '${env_var}: \"${EO}secrets.${env_var}${EC}\"' to the workflow-level env section (top-level env: block)"
-              echo "- Add '${env_var}: ${EO}env.${env_var}${EC}' to the Run coding agent step env section"
-            done
-            echo ""
-            echo "Important rules:"
-            echo "1. Only add env vars that don't already exist in the file"
-            echo "2. Add workflow-level env vars in the top-level env: block, after the last existing env var"
-            echo "3. Add step-level env vars in the Run coding agent step env: block, after the last existing env var"
-            echo "4. Preserve all existing content and formatting"
-            echo "5. The resulting YAML must be valid - verify the syntax is correct"
-            echo "6. Do not modify anything else in the file"
-          } > "$PROMPT_FILE"
-
-          echo "=== Copilot CLI Prompt ==="
-          cat "$PROMPT_FILE"
-          echo "========================="
-
-          PROMPT_CONTENT="$(cat "$PROMPT_FILE")"
-          ATTEMPT=1
-          MAX_ATTEMPTS=2
-          while [[ "${ATTEMPT}" -le "${MAX_ATTEMPTS}" ]]; do
-            echo "Running Copilot CLI attempt ${ATTEMPT}/${MAX_ATTEMPTS}..."
-            set +e
-            timeout 5m npx -y @github/copilot@${{ vars.COPILOT_CLI_VERSION || '1.0.18' }} -p "$PROMPT_CONTENT" --yolo --model gpt-5.4-mini
-            COPILOT_EXIT=$?
-            set -e
-
-            if [[ "${COPILOT_EXIT}" -eq 0 ]]; then
-              echo "✅ Copilot CLI completed successfully"
-              break
-            fi
-
-            if [[ "${ATTEMPT}" -lt "${MAX_ATTEMPTS}" ]]; then
-              if [[ "${COPILOT_EXIT}" -eq 124 ]]; then
-                echo "::warning::Copilot CLI timed out on attempt ${ATTEMPT}/${MAX_ATTEMPTS}, retrying in 5 seconds..."
-              else
-                echo "::warning::Copilot CLI failed with exit code ${COPILOT_EXIT} on attempt ${ATTEMPT}/${MAX_ATTEMPTS}, retrying in 5 seconds..."
-              fi
-              ATTEMPT=$((ATTEMPT + 1))
-              sleep 5
-              continue
-            fi
-
+          if ! bash .github/workflows/lib/inject-workflow-env.sh \
+            "$WORKFLOW_FILE" \
+            "$REQUIRED_ENVS"; then
             echo "INSTALL_FAILED=true" >> "$GITHUB_ENV"
-            if [[ "${COPILOT_EXIT}" -eq 124 ]]; then
-              echo "INSTALL_ERROR=[步驟7 - 設定環境變數] 自動設定環境變數的程序等待超過 5 分鐘逾時。可能是系統目前繁忙，請稍後重試安裝。" >> "$GITHUB_ENV"
-            else
-              echo "INSTALL_ERROR=[步驟7 - 設定環境變數] 自動設定環境變數失敗（錯誤代碼：${COPILOT_EXIT}）。可能是 COPILOT_GITHUB_TOKEN 權限不足，請確認 token 具備完整的 Copilot 使用權限。" >> "$GITHUB_ENV"
-            fi
+            echo "INSTALL_ERROR=[步驟7 - 設定環境變數] 自動注入環境變數失敗。請確認 workflow 檔案格式正確，或查看上方 log 了解詳情。" >> "$GITHUB_ENV"
             exit 0
-          done
+          fi
+
+          echo "✅ Env vars injected into $WORKFLOW_FILE"
 
       # ── Step 8: 提交 main 分支的 workflow 變更 ─────────────────────
       - name: 提交 main 分支的 workflow 變更

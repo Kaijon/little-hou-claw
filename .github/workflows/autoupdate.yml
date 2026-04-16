@@ -9,6 +9,10 @@ on:
         description: "強制執行更新（忽略版本比對）"
         type: boolean
         default: false
+      sync_command:
+        description: "更新完成後同步 Telegram 快捷指令"
+        type: boolean
+        default: false
       request_id:
         description: "Telegram workflow notification request id"
         type: string
